@@ -1,11 +1,11 @@
 from django import forms
-from django.core.validators import MinValueValidator, MaxValueValidator
+from .models import toDoList
+
+class toDoListForm(forms.ModelForm):
+    class Meta:
+        model = toDoList
+        fields = ['userId','taskName', 'progress', 'dueDate']
 
 
-
-class Form(forms.Form):
-    taskName = forms.CharField(max_length=100)
-    progress = forms.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
-    dueDate = forms.DateTimeField()
-    # def reset():
-        
+class MessageForm(forms.Form):
+    content = forms.CharField(widget=forms.Textarea)

@@ -1,0 +1,55 @@
+{% extends "app/base.html" %}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Chat</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+    </head>
+    <body>
+        
+
+        <!-- chat/chat_view.html -->
+        <h1>Chat with {{ receiver.username }}</h1>
+
+        <div>
+            {% block header %}
+
+<h1>To Do List</h1>
+
+{% endblock  %}
+
+
+
+{% block chat %}
+<div id="message-container" style="height: 200px; overflow-y: scroll;">
+    
+    {% for message in messages %}
+            {% if message.sender == receiver %}
+            <p><strong>{{ message.sender.username }}:</strong> {{ message.content }}</p>
+            {% else %}
+            <p><strong>You:</strong> {{ message.content }}</p>
+            {% endif %}
+        {% endfor %}
+
+</div>
+<script>
+    function scrollToBottom() {
+        var messageContainer = document.getElementById("message-container");
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+
+    window.onload = function() {
+        scrollToBottom();
+    };
+</script>
+        <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Send</button>
+        </form>
+{% endblock  %} 
+    </body>
+</html>
