@@ -5,12 +5,6 @@ from django.contrib.auth import views as auth_views
 # app_name = 'app'
 
 urlpatterns = [
-    # path('', views.home,name="home"),
-    # path('add/', views.add,name="add"),
-    # path('formEdit/<int:id>/', views.formEdit,name="formEdit"),
-    # path('edit/', views.edit,name="edit"),
-    # path('delete/<int:id>/', views.delete,name="delete"),
-    # path('search/', views.search,name="search"),
 
     path('home/', views.HomeListView.as_view(),name="home"),
     path('add/', views.AddView.as_view(),name="add"),
@@ -22,7 +16,8 @@ urlpatterns = [
     # path('back/', views.BackView.as_view(),name="back"),
     path('', views.LoginView.as_view(), name='login'),
     path('logout/',views.LogoutView.as_view(),name='logout'),
-    path('chat/<int:receiver_id>/', views.chat_view, name='chat_view'),
+    # path('chat/<int:receiver_id>/', views.chat_view, name='chat_view'),
+    path('chat/<int:receiver_id>/', views.ChatView.as_view(), name='chat_view'),
     path('test/', views.test.as_view(), name='test'),
     
 ]

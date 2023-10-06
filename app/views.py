@@ -12,73 +12,6 @@ from django.contrib.auth.models import User
 
 
 
-# Create your views here.
-# def home(request):
-#     todolist = toDoList.objects.all().order_by("dueDate")
-#     for i in todolist:
-#         i.phantram=i.progress
-#         if i.phantram>80:
-#             i.mau='bg-green'
-#         elif i.phantram>60:
-#             i.mau='bg-purple'
-#         elif i.phantram>40:
-#             i.mau='bg-cyan'
-#         elif i.phantram>20:
-#             i.mau='bg-yellow'
-#         else:
-#             i.mau='bg-red'    
-#         i.progress*=5
-#     data ={'tasks':todolist} 
-#     return render(request,'app/home.html',data)
-
-
-
-# def add(request):
-#     if request.method=='POST':
-#         taskName=request.POST.get('taskName')
-#         progress=request.POST.get('progress')
-#         dueDate=request.POST.get('dueDate')
-#         toDoList.objects.create(taskName=taskName,progress=progress,dueDate=dueDate)
-#     return redirect('/')
-
-# def formEdit(request,id):
-#     list = toDoList.objects.get(id=id)
-#     data={
-#         'task': list
-#     }
-#     return render(request,'app/formEdit.html',data)
-# def edit(request):
-#     id=request.POST.get('id')
-#     toDoList.objects.get(id=id)
-#     taskName=request.POST.get('taskName')
-#     progress=request.POST.get('progress')
-#     dueDate=request.POST.get('dueDate')
-#     toDoList(id=id,taskName=taskName,progress=progress,dueDate=dueDate).save()
-#     return redirect('/')
-
-# def delete(request,id):
-#     toDoList.objects.get(id=id).delete()
-#     return redirect('/')
-
-# def search(request):
-#     todolist = toDoList.objects.filter(taskName__icontains=request.POST.get('search'))
-#     for i in todolist:
-#         i.phantram=i.progress
-#         if i.phantram>80:
-#             i.mau='bg-green'
-#         elif i.phantram>60:
-#             i.mau='bg-purple'
-#         elif i.phantram>40:
-#             i.mau='bg-cyan'
-#         elif i.phantram>20:
-#             i.mau='bg-yellow'
-#         else:
-#             i.mau='bg-red'    
-#         i.progress*=5
-#     data ={'tasks':todolist} 
-#     return render(request,'app/home.html',data)
-
-
 class HomeListView(LoginRequiredMixin,ListView):
     model = toDoList
     template_name = 'app/home.html'
@@ -221,24 +154,36 @@ class SortView(LoginRequiredMixin,ListView):
         data ={'tasks':todolist2} 
         return data
 
-def chat_view(request, receiver_id):
-    receiver = get_object_or_404(User, id=receiver_id)
-    messages = Message.objects.filter(sender=request.user, receiver=receiver) | Message.objects.filter(sender=receiver, receiver=request.user)
-    form = MessageForm(request.POST or None)
+class ChatView(View):
+    def get(self,request, receiver_id):
+        receiver = get_object_or_404(User, id=receiver_id)
+        messages = Message.objects.filter(sender=request.user, receiver=receiver) | Message.objects.filter(sender=receiver, receiver=request.user)
+        form = MessageForm(request.POST or None)
 
-    if request.method == 'POST':
+
+        context = {
+            'receiver': receiver,
+            'messages': messages,
+            'form': form
+        }
+
+        return render(request, 'app/chat_view.html', context)
+    def post(self, request, receiver_id):
+        receiver = get_object_or_404(User, id=receiver_id)
+        form = MessageForm(request.POST)
+
         if form.is_valid():
             content = form.cleaned_data['content']
             message = Message.objects.create(sender=request.user, receiver=receiver, content=content)
             return redirect('chat_view', receiver_id=receiver_id)
 
-    context = {
-        'receiver': receiver,
-        'messages': messages,
-        'form': form
-    }
+        context = {
+            'receiver': receiver,
+            'form': form
+        }
 
-    return render(request, 'app/chat_view.html', context)
+        return render(request, 'app/chat_view.html', context)
+
 
 
 
