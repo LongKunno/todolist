@@ -83,6 +83,7 @@ class EditView(View):
     
 class SearchView(View):
     def post(self,request):
+        users = User.objects.all()
         todolist = toDoList.objects.filter(taskName__icontains=request.POST.get('search'),userId=self.request.user.id)
         for i in todolist:
             if i.dueDate < timezone.now():
@@ -99,7 +100,7 @@ class SearchView(View):
             else:
                 i.mau='bg-red'    
             i.progress*=5
-        data ={'tasks':todolist} 
+        data ={'tasks':todolist,'users': users} 
         return render(request,'app/home.html',data)
 
 class LoginView(LoginView):
@@ -130,6 +131,7 @@ class SortView(LoginRequiredMixin,ListView):
     ordering = 'progress'
 
     def get_context_data(self, **kwargs):
+        users = User.objects.all()
         todolist = super().get_context_data(**kwargs)
         user_id = self.request.user.id
         todolist2 = todolist['tasks'].filter(userId=user_id)  # Lọc theo user id
@@ -151,11 +153,12 @@ class SortView(LoginRequiredMixin,ListView):
             else:
                 i.mau = 'bg-red'
             i.progress *= 5
-        data ={'tasks':todolist2} 
+        data ={'tasks':todolist2,'users': users} 
         return data
 
 class ChatView(View):
     def get(self,request, receiver_id):
+        users = User.objects.all()
         receiver = get_object_or_404(User, id=receiver_id)
         messages = Message.objects.filter(sender=request.user, receiver=receiver) | Message.objects.filter(sender=receiver, receiver=request.user)
         form = MessageForm(request.POST or None)
@@ -164,7 +167,8 @@ class ChatView(View):
         context = {
             'receiver': receiver,
             'messages': messages,
-            'form': form
+            'form': form,
+            'users': users
         }
 
         return render(request, 'app/chat_view.html', context)
@@ -183,6 +187,8 @@ class ChatView(View):
         }
 
         return render(request, 'app/chat_view.html', context)
+
+
 
 
 

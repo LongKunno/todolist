@@ -4,9 +4,8 @@ from django.middleware.common import CommonMiddleware
 
 
 class ExceptionMiddleware(CommonMiddleware):
-
     def process_exception(self, request, exception):
-        return redirect(reverse(''))  # Chuyển hướng về trang Login
+        return redirect('login')  
 
 
 class MyMiddleware:
