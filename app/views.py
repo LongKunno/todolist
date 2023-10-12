@@ -9,8 +9,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
-import json
+import random
 from django.core.paginator import Paginator
+from datetime import timedelta
 from django.db.models import Q
 
 
@@ -46,15 +47,13 @@ class HomeListView(LoginRequiredMixin,ListView):
                 i.mau = 'bg-red'
             i.progress *= 5
 
-        # queryset = todolist2
-        # paginator = Paginator(queryset, 10)
-        # print(paginator.get_page(1))
-        # data ={'tasks':paginator.get_page(1),'users': users} 
-        # return data
         paginator = Paginator(todolist2, 10)
+        num_pages = paginator.num_pages
+        page_range = list(range(1, num_pages + 1))
+
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-        data= {'tasks': page_obj ,'users': users}
+        data= {'page_range':page_range,'tasks': page_obj ,'users': users}
         return data
 
 class DeleteView(LoginRequiredMixin,DeleteView):
@@ -168,9 +167,11 @@ class SortView(LoginRequiredMixin,ListView):
                 i.mau = 'bg-red'
             i.progress *= 5
         paginator = Paginator(todolist2, 10)
+        num_pages = paginator.num_pages
+        page_range = list(range(1, num_pages + 1))
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-        data= {'tasks': page_obj ,'users': users}
+        data= {'page_range':page_range,'tasks': page_obj ,'users': users}
         return data
 
 class ChatView(LoginRequiredMixin,View):
@@ -196,7 +197,6 @@ class ChatView(LoginRequiredMixin,View):
             'receiver': receiver,
             'form': form
         }
-
         return render(request, 'app/chat_view.html', context)
     
 class IndexView(LoginRequiredMixin,View): 
@@ -208,9 +208,7 @@ class IndexView(LoginRequiredMixin,View):
 class GetMessagesView(LoginRequiredMixin,View): 
     def get(self, request,receiver_id): 
         receiver = get_object_or_404(User, id=receiver_id)
-        # messages = Message.objects.order_by('-timestamp')[:5] 
         messages = Message.objects.filter(sender=request.user, receiver=receiver).order_by('-timestamp')  | Message.objects.filter(sender=receiver, receiver=request.user).order_by('-timestamp')
-        # [print(message.receiver) for message in messages[::-1]] 
         response = [{'receiver_username': receiver.username,'sender':str(message.sender),'receiver': str(message.receiver),'content': message.content, 'timestamp': message.timestamp.strftime("%H:%M")} for message in messages[::-1]] 
         return JsonResponse(response, safe=False)
     
@@ -220,10 +218,8 @@ def send_message(request):
         content = request.POST.get('content')
         sender_str = request.POST.get('sender')
         receiver_str = request.POST.get('receiver')
-
         sender=get_object_or_404(User, username=sender_str)
         receiver=get_object_or_404(User, id=receiver_str)
-
         message = Message.objects.create(content=content,sender=sender,receiver=receiver)
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'})
@@ -245,6 +241,110 @@ class StatisticsView(LoginRequiredMixin,View):
         users = User.objects.all()
         context = { 'users': users} 
         return render(request, 'app/statistics.html', context)
+
+
+class message_xoa2day(LoginRequiredMixin,View):
+    def get(self, request):
+        Message.objects.filter(timestamp__lt=timezone.now()-timedelta(days=2)).delete()
+        users = User.objects.all()
+        context = {'users': users} 
+        return render(request, 'app/statistics.html', context)
+    
+
+class message_add50tin(LoginRequiredMixin,View):
+    def get(self, request):
+        users=User.objects.all()    
+        content = "random"
+        timestamp = timezone.now()-timedelta(days=3)
+        for i in range(50):
+            users_test = User.objects.all()
+            sender = random.choice(users_test)
+            users_test = users_test.exclude(pk=sender.pk)
+            receiver = random.choice(users_test)
+            message = Message.objects.create(sender=sender,receiver=receiver,content=content)
+            message.timestamp=timezone.now()-timedelta(days=3)
+            print(message)
+            message.save()
+        context = {'users': users} 
+        return render(request, 'app/statistics.html', context)
+
+class todolist_xoaTaskQuaHan(LoginRequiredMixin,View):
+    def get(self, request):
+        data=toDoList.objects.filter(progress__lt=100,dueDate__lt=timezone.now())
+        for i in data:
+            print(i)
+            i.delete()
+        users = User.objects.all()
+        context = {'users': users} 
+        return render(request, 'app/statistics.html', context)
+
+class todolist_xoaTaskHoanThanh(LoginRequiredMixin,View):
+    def get(self, request):
+        data=toDoList.objects.filter(progress=100)
+        for i in data:
+            print(i)
+            i.delete()
+        users = User.objects.all()
+        context = {'users': users} 
+        return render(request, 'app/statistics.html', context)
+
+class todolist_cong1day(LoginRequiredMixin,View):
+    def get(self, request): 
+        data=toDoList.objects.all()
+        for i in data:
+            i.add_one_day_to_dueDate()
+        users = User.objects.all()
+        context = {'users': users} 
+        return render(request, 'app/statistics.html', context)
+    
+class todolist_tru1day(LoginRequiredMixin,View):
+    def get(self, request): 
+        data=toDoList.objects.all()
+        for i in data:
+            i.minus_one_day_to_dueDate()
+        users = User.objects.all()
+        context = {'users': users} 
+        return render(request, 'app/statistics.html', context)
+
+class todolist_cong1dayQuaHan(LoginRequiredMixin,View):
+    def get(self, request):
+        data=toDoList.objects.all()
+        for i in data:
+            if i.dueDate<=timezone.now():
+                i.add_one_day_to_dueDate_out_of_date()
+        users = User.objects.all()
+        context = {'users': users} 
+        return render(request, 'app/statistics.html', context)
+
+
+class todolist_cong50taskRandom(LoginRequiredMixin,View):
+    def get(self, request):
+        users=User.objects.all()    
+        taskName = "random"
+        for i in range(50):
+            users_test = User.objects.all()
+            userId = random.choice(users_test).id
+            progress = random.randint(1,120)
+            if progress >=100:
+                progress=100
+            day = random.randint(-20,20)
+            dueDate = timezone.now()+timedelta(day)
+            todolist=toDoList.objects.create(taskName=taskName,userId=userId,progress=progress,dueDate=dueDate)
+            print(todolist)
+        context = {'users': users} 
+        return render(request, 'app/statistics.html', context)
+    
+class todolist_xoaTaskRandom(LoginRequiredMixin,View):
+    def get(self, request): 
+        data=toDoList.objects.filter(taskName="random")
+        for i in data:
+            print(i)
+            i.delete()
+        users = User.objects.all()
+        context = {'users': users} 
+        return render(request, 'app/statistics.html', context)
+
+
 
 
 

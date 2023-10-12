@@ -42,6 +42,7 @@
         loadHeader({{receiver_id}});
 
         $('#messageForm').on('submit', function(e) {
+            //ngăn chặn submit mặc định để chạy bằng ajax
             e.preventDefault();
             var data = {'content':$('#contentInput').val(),'sender':"{{user.username}}",'receiver':"{{receiver_id}}"};
             sendMessage(data);

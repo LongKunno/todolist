@@ -11,6 +11,7 @@
 
 
 {% block chat %}
+<br><br>
 <h4>Message</h4>
 <table class="table" style="max-width:600px">
     <thead>
@@ -23,6 +24,13 @@
     <tbody id="loadMessages">
     </tbody>
 </table>
+<a href="{% url 'message_xoa2day' %}" >
+    <button type="button" class="btn btn-outline-success">Xoá tin nhắn trước 2 day</button>
+</a>
+<a href="{% url 'message_add50tin' %}">
+    <button type="button" class="btn btn-outline-success">Thêm ngẫu nhiên 50 tin nhắn vào 3 ngày trước </button>
+</a>
+<br><br><br><br>
 <h4>Todolist</h4>
 <table class="table" style="max-width:600px">
     <thead>
@@ -37,6 +45,27 @@
     <tbody id="loadTodolist">
     </tbody>
 </table>
+<a href="{% url 'todolist_xoaTaskQuaHan' %}">
+    <button type="button" class="btn btn-outline-success">Xoá Task quá hạn </button>
+</a>
+<a href="{% url 'todolist_xoaTaskHoanThanh' %}">
+    <button type="button" class="btn btn-outline-success">Xoá Task hoàn thành </button>
+</a>
+<a href="{% url 'todolist_cong1day' %}">
+    <button type="button" class="btn btn-outline-success">+1 day tất cả Task  </button>
+</a>
+<a href="{% url 'todolist_tru1day' %}">
+    <button type="button" class="btn btn-outline-success">-1 day tất cả Task  </button>
+</a>
+<a href="{% url 'todolist_cong1dayQuaHan' %}">
+    <button type="button" class="btn btn-outline-success">+1 day Task quá hạn  </button>
+</a>
+<a href="{% url 'todolist_cong50taskRandom' %}">
+    <button type="button" class="btn btn-outline-success">+50 Task Random  </button>
+</a>
+<a href="{% url 'todolist_xoaTaskRandom' %}">
+    <button type="button" class="btn btn-outline-success">Xoá Task Random  </button>
+</a>
 </form>
 
 
@@ -49,6 +78,7 @@
         loadHeader();
         loadMessages();
         loadTodolist();
+
 
         
         function loadMessages() {
