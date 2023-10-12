@@ -1,0 +1,98 @@
+
+{% extends "app/base.html" %}
+
+
+{% block header %}
+
+<h1 id='loadHeader'></h1>
+
+{% endblock  %}
+
+
+
+{% block chat %}
+<h4>Message</h4>
+<table class="table" style="max-width:600px">
+    <thead>
+            <tr>
+                <th scope="col"><center>Username</center></th>
+                <th scope="col"><center>Total Message Send</center></th>
+                <th scope="col"><center>Total Message Received</center></th>
+              </tr>
+    </thead>
+    <tbody id="loadMessages">
+    </tbody>
+</table>
+<h4>Todolist</h4>
+<table class="table" style="max-width:600px">
+    <thead>
+            <tr>
+                <th scope="col"><center>Username</center></th>
+                <th scope="col"><center>Total Task</center></th>
+                <th scope="col"><center>Complete</center></th>
+                <th scope="col"><center>Out of date</center></th>
+                <th scope="col"><center>In process</center></th>
+              </tr>
+    </thead>
+    <tbody id="loadTodolist">
+    </tbody>
+</table>
+</form>
+
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    
+    $(document).ready(function() {
+        loadHeader();
+        loadMessages();
+        loadTodolist();
+
+        
+        function loadMessages() {
+            $.ajax({
+                url: "{% url 'get_table' %}",
+                method: 'GET',
+                success: function(response) {
+                    var rows = '';
+                    for (var i = 0; i < response.length; i++) {
+                        var row = response[i];
+                        rows += "<tr><td>"+row.username+ "</td><td>"  +row.totalSend+"</td><td>"+ row.totalReceived   + "</td></tr>";
+                    }
+                    $('#loadMessages').html(rows);
+                },
+                error: function() {
+                    $('#loadMessages').html('<p>Failed to load table.</p>');
+                }
+            });
+        }
+        function loadTodolist() {
+            $.ajax({
+                url: "{% url 'get_todolist' %}",
+                method: 'GET',
+                success: function(response) {
+                    var rows = '';
+                    for (var i = 0; i < response.length; i++) {
+                        var row = response[i];
+                        rows += "<tr><td>"+row.username+ "</td><td>"  +row.totalTask+"</td><td>"+ row.hoanthanh+"</td><td>"+ row.quahan+"</td><td>"+ row.dangtienhanh   + "</td></tr>";
+                    }
+                    $('#loadTodolist').html(rows);
+                },
+                error: function() {
+                    $('#loadTodolist').html('<p>Failed to load table.</p>');
+                }
+            });
+        }
+
+        function loadHeader(){
+            $('#loadHeader').html('Thống kê dữ liệu');
+        }
+    });
+</script>
+
+{% endblock  %} 
+
+    </body>
+</html>

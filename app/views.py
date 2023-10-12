@@ -1,14 +1,18 @@
 from django.utils import timezone
-from django.http import HttpResponseRedirect
+from django.http import JsonResponse
 from django.shortcuts import redirect, render,  get_object_or_404
 from .models import toDoList,Message
-from .forms import toDoListForm,MessageForm
-from django.contrib import messages
-from django.core.exceptions import PermissionDenied
-from django.views.generic import ListView, DetailView, CreateView,View,DeleteView,UpdateView
+from .forms import MessageForm
+from django.views.generic import ListView,View,DeleteView
 from django.contrib.auth.views import LoginView,LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string
+import json
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 
 
 
@@ -41,15 +45,24 @@ class HomeListView(LoginRequiredMixin,ListView):
             else:
                 i.mau = 'bg-red'
             i.progress *= 5
-        data ={'tasks':todolist2,'users': users} 
+
+        # queryset = todolist2
+        # paginator = Paginator(queryset, 10)
+        # print(paginator.get_page(1))
+        # data ={'tasks':paginator.get_page(1),'users': users} 
+        # return data
+        paginator = Paginator(todolist2, 10)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        data= {'tasks': page_obj ,'users': users}
         return data
 
-class DeleteView(DeleteView):
+class DeleteView(LoginRequiredMixin,DeleteView):
     model = toDoList
     success_url = '/home'
 
     
-class AddView(View):
+class AddView(LoginRequiredMixin,View):
     def post(self, request): 
         taskName = request.POST.get('taskName') 
         progress = request.POST.get('progress') 
@@ -62,13 +75,13 @@ class AddView(View):
         toDoList.objects.create(taskName=taskName, progress=progress, dueDate=dueDate, userId=userId) 
         return redirect('home')
     
-class FormEditView(View):
+class FormEditView(LoginRequiredMixin,View):
     def get(self, request, pk):
         list = toDoList.objects.get(id=pk)
         data = {'task': list}
         return render(request, 'app/formEdit.html', data)
 
-class EditView(View):
+class EditView(LoginRequiredMixin,View):
     def post(self,request):
         id=request.POST.get('id')
         data = toDoList.objects.get(id=id)
@@ -81,7 +94,7 @@ class EditView(View):
         data.save()
         return redirect('home')
     
-class SearchView(View):
+class SearchView(LoginRequiredMixin,View):
     def post(self,request):
         users = User.objects.all()
         todolist = toDoList.objects.filter(taskName__icontains=request.POST.get('search'),userId=self.request.user.id)
@@ -100,6 +113,7 @@ class SearchView(View):
             else:
                 i.mau='bg-red'    
             i.progress*=5
+        
         data ={'tasks':todolist,'users': users} 
         return render(request,'app/home.html',data)
 
@@ -115,7 +129,7 @@ class LoginView(LoginView):
         return self.render_to_response(context)
     
 
-class LogoutView(LogoutView):
+class LogoutView(LoginRequiredMixin,LogoutView):
     next_page='/'
 
 
@@ -153,50 +167,92 @@ class SortView(LoginRequiredMixin,ListView):
             else:
                 i.mau = 'bg-red'
             i.progress *= 5
-        data ={'tasks':todolist2,'users': users} 
+        paginator = Paginator(todolist2, 10)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        data= {'tasks': page_obj ,'users': users}
         return data
 
-class ChatView(View):
+class ChatView(LoginRequiredMixin,View):
     def get(self,request, receiver_id):
-        users = User.objects.all()
         receiver = get_object_or_404(User, id=receiver_id)
         messages = Message.objects.filter(sender=request.user, receiver=receiver) | Message.objects.filter(sender=receiver, receiver=request.user)
         form = MessageForm(request.POST or None)
-
-
         context = {
             'receiver': receiver,
             'messages': messages,
-            'form': form,
-            'users': users
+            'form': form
         }
 
         return render(request, 'app/chat_view.html', context)
     def post(self, request, receiver_id):
         receiver = get_object_or_404(User, id=receiver_id)
         form = MessageForm(request.POST)
-
         if form.is_valid():
             content = form.cleaned_data['content']
             message = Message.objects.create(sender=request.user, receiver=receiver, content=content)
             return redirect('chat_view', receiver_id=receiver_id)
-
         context = {
             'receiver': receiver,
             'form': form
         }
 
         return render(request, 'app/chat_view.html', context)
+    
+class IndexView(LoginRequiredMixin,View): 
+    def get(self, request, receiver_id): 
+        users = User.objects.all()
+        context = { 'receiver_id': receiver_id , 'users': users} 
+        return render(request, 'app/chat.html', context)
+    
+class GetMessagesView(LoginRequiredMixin,View): 
+    def get(self, request,receiver_id): 
+        receiver = get_object_or_404(User, id=receiver_id)
+        # messages = Message.objects.order_by('-timestamp')[:5] 
+        messages = Message.objects.filter(sender=request.user, receiver=receiver).order_by('-timestamp')  | Message.objects.filter(sender=receiver, receiver=request.user).order_by('-timestamp')
+        # [print(message.receiver) for message in messages[::-1]] 
+        response = [{'receiver_username': receiver.username,'sender':str(message.sender),'receiver': str(message.receiver),'content': message.content, 'timestamp': message.timestamp.strftime("%H:%M")} for message in messages[::-1]] 
+        return JsonResponse(response, safe=False)
+    
+@csrf_exempt
+def send_message(request):
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        sender_str = request.POST.get('sender')
+        receiver_str = request.POST.get('receiver')
+
+        sender=get_object_or_404(User, username=sender_str)
+        receiver=get_object_or_404(User, id=receiver_str)
+
+        message = Message.objects.create(content=content,sender=sender,receiver=receiver)
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'})
+
+class GetTable(LoginRequiredMixin,View): 
+    def get(self, request): 
+        users = User.objects.all()
+        response = [{'username': user.username,'totalSend':Message.objects.filter(sender=user).count(),'totalReceived': Message.objects.filter(receiver=user).count()} for user in users[::+1]]
+        return JsonResponse(response, safe=False)
+    
+class GetTodolist(LoginRequiredMixin,View):
+    def get(self, request): 
+        users = User.objects.all()
+        response = [{'username': user.username,'totalTask':toDoList.objects.filter(userId=user.id).count(),'hoanthanh': toDoList.objects.filter(userId=user.id,progress=100).count(),'quahan': toDoList.objects.filter(userId=user.id,progress__lt=100,dueDate__lt=timezone.now()).count(),'dangtienhanh': toDoList.objects.filter(userId=user.id,progress__lt=100,dueDate__gt=timezone.now()).count()} for user in users[::+1]]
+        return JsonResponse(response, safe=False)
+    
+class StatisticsView(LoginRequiredMixin,View): 
+    def get(self, request ): 
+        users = User.objects.all()
+        context = { 'users': users} 
+        return render(request, 'app/statistics.html', context)
 
 
 
 
 
 
-# class BackView(View):
-#     def get(self, request):
-#         # Lấy đường dẫn trang trước đó từ request.META
-#         previous_page = request.META.get('HTTP_REFERER')
-#         if previous_page:
-#             return redirect(previous_page)
-#         return redirect('home')
+
+
+
+
+        

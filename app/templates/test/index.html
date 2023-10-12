@@ -1,0 +1,148 @@
+
+{% extends "app/base.html" %}
+
+
+{% block header %}
+
+<h1 id='loadHeader'></h1>
+
+{% endblock  %}
+
+
+
+{% block chat %}
+</center>
+<div class="chatsize" style="margin-left:33%;">
+    <div id="messages"style="height: 400px; overflow-y: scroll;">
+        {% for message in messages %}
+            <p> {{ message.content }} - {{ message.timestamp }}</p>
+        {% empty %}
+            <p>No messages yet.</p>
+        {% endfor %}
+    </div>
+    
+    <form id="messageForm">
+        {% csrf_token %}
+        <input type="text" id="contentInput" style="width:520px">
+        <button type="submit">Send</button>
+    
+        <br><br><br>
+</div>
+<center>
+<table class="table" style="max-width:600px">
+
+    <thead>
+
+            <tr>
+                <th scope="col"><center>Username</center></th>
+                <th scope="col"><center>Total Message Send</center></th>
+                <th scope="col"><center>Total Message Received</center></th>
+              </tr>
+
+    </thead>
+
+    <tbody id="loadTable">
+      <tr>
+        <td>Long</td>
+        <td>100</td>
+        <td>200</td>
+      </tr>
+      <tr>
+        <td>Jacob</td>
+        <td>200</td>
+        <td>300</td>
+      </tr>
+      <tr>
+        <td>Larry</td>
+        <td>300</td>
+        <td>200</td>
+      </tr>
+    </tbody>
+  </table>
+</form>
+
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    
+    $(document).ready(function() {
+        loadMessages();
+        loadTable();
+        loadHeader({{receiver_id}});
+
+        $('#messageForm').on('submit', function(e) {
+            e.preventDefault();
+            var data = {'content':$('#contentInput').val(),'sender':"{{user.username}}",'receiver':"{{receiver_id}}"};
+            sendMessage(data);
+        });
+
+        function loadMessages() {
+            $.ajax({
+                url: "{% url 'get_messages' receiver_id %}",
+                method: 'GET',
+                success: function(response) {
+                    var messages = '';
+                    for (var i = 0; i < response.length; i++) {
+                        var message = response[i];
+                        if (message.sender != "{{user.username}}")
+                        messages += "<p><span style='font-size:10px'>("+message.timestamp+ ") "  +message.sender+":</span> "+ message.content   + "</p>";
+                        else
+                        messages += "<p><span style='font-size:10px'>("+message.timestamp+ ") "  +"You"+":</span> "+ message.content   + "</p>";
+                    }
+                    $('#messages').html(messages);
+                    var messageContainer = document.getElementById("messages");
+                    messageContainer.scrollTop = messageContainer.scrollHeight;
+                    loadHeader(message.receiver_username)
+                },
+                error: function() {
+                    $('#messages').html('<p>Failed to load messages.</p>');
+                }
+            });
+        }
+
+        function sendMessage(datasend) {
+            $.ajax({
+                url: "{% url 'send_message'  %}",
+                method: 'POST',
+                data: datasend,
+                success: function(response) {
+                    $('#contentInput').val('');
+                    loadMessages();
+                    loadTable()
+                },
+                error: function() {
+                    alert('Failed to send message.');
+                }
+            });
+        }
+        
+        function loadTable() {
+            $.ajax({
+                url: "{% url 'get_table' %}",
+                method: 'GET',
+                success: function(response) {
+                    var rows = '';
+                    for (var i = 0; i < response.length; i++) {
+                        var row = response[i];
+                        rows += "<tr><td>"+row.username+ "</td><td>"  +row.totalSend+"</td><td>"+ row.totalReceived   + "</td></tr>";
+                    }
+                    $('#loadTable').html(rows);
+                },
+                error: function() {
+                    $('#loadTable').html('<p>Failed to load table.</p>');
+                }
+            });
+        }
+
+        function loadHeader(receiverName){
+            $('#loadHeader').html('Chat with ' + receiverName);
+        }
+    });
+</script>
+
+{% endblock  %} 
+
+    </body>
+</html>
