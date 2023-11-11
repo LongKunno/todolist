@@ -24,10 +24,10 @@
     <tbody id="loadMessages">
     </tbody>
 </table>
-<a href="{% url 'message_xoa2day' %}" >
+<a href="{% url 'app:message_xoa2day' %}" >
     <button type="button" class="btn btn-outline-success">Xoá tin nhắn trước 2 day</button>
 </a>
-<a href="{% url 'message_add50tin' %}">
+<a href="{% url 'app:message_add50tin' %}">
     <button type="button" class="btn btn-outline-success">Thêm ngẫu nhiên 50 tin nhắn vào 3 ngày trước </button>
 </a>
 <br><br><br><br>
@@ -45,28 +45,27 @@
     <tbody id="loadTodolist">
     </tbody>
 </table>
-<a href="{% url 'todolist_xoaTaskQuaHan' %}">
+<a href="{% url 'app:todolist_xoaTaskQuaHan' %}">
     <button type="button" class="btn btn-outline-success">Xoá Task quá hạn </button>
 </a>
-<a href="{% url 'todolist_xoaTaskHoanThanh' %}">
+<a href="{% url 'app:todolist_xoaTaskHoanThanh' %}">
     <button type="button" class="btn btn-outline-success">Xoá Task hoàn thành </button>
 </a>
-<a href="{% url 'todolist_cong1day' %}">
+<a href="{% url 'app:todolist_cong1day' %}">
     <button type="button" class="btn btn-outline-success">+1 day tất cả Task  </button>
 </a>
-<a href="{% url 'todolist_tru1day' %}">
+<a href="{% url 'app:todolist_tru1day' %}">
     <button type="button" class="btn btn-outline-success">-1 day tất cả Task  </button>
 </a>
-<a href="{% url 'todolist_cong1dayQuaHan' %}">
+<a href="{% url 'app:todolist_cong1dayQuaHan' %}">
     <button type="button" class="btn btn-outline-success">+1 day Task quá hạn  </button>
 </a>
-<a href="{% url 'todolist_cong50taskRandom' %}">
+<a href="{% url 'app:todolist_cong50taskRandom' %}">
     <button type="button" class="btn btn-outline-success">+50 Task Random  </button>
 </a>
-<a href="{% url 'todolist_xoaTaskRandom' %}">
+<a href="{% url 'app:todolist_xoaTaskRandom' %}">
     <button type="button" class="btn btn-outline-success">Xoá Task Random  </button>
 </a>
-</form>
 
 
 
@@ -83,7 +82,7 @@
         
         function loadMessages() {
             $.ajax({
-                url: "{% url 'get_table' %}",
+                url: "{% url 'app:get_table' %}",
                 method: 'GET',
                 success: function(response) {
                     var rows = '';
@@ -100,7 +99,7 @@
         }
         function loadTodolist() {
             $.ajax({
-                url: "{% url 'get_todolist' %}",
+                url: "{% url 'app:get_todolist' %}",
                 method: 'GET',
                 success: function(response) {
                     var rows = '';

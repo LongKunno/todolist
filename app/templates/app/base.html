@@ -11,9 +11,11 @@
         <link rel="stylesheet" type='text/css' href="{%static 'app/mess.css' %}">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
-
     </head>
     <body style="background-color:#eadcff;">
+        <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.0/dist/js/coreui.bundle.min.js" integrity="sha384-Iqk8EE7ao72xAVBuuQTEwrU5N2IdvpJER5ZzM6LxwcXHqj2WstttaOvopXziv0nU" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.0/dist/js/coreui.min.js" integrity="sha384-Ccu4pXX7m9x5nOmnhLGyxq3pqYWoc67qHmnJwC20bxJvdziB6gZtOAb9BLN5bOOb" crossorigin="anonymous"></script>
         <center>
             {% if errors %}
             <div class="alert alert-danger">
@@ -28,29 +30,29 @@
             {%block header %}
 
             {% endblock%}
-            <a href="{% url 'home' %}">
+            <a href="{% url 'app:home' %}">
                 <button type="button" class="btn btn-outline-success">Home</button>
             </a>
-            <a href="{% url 'sort' %}">
+            <a href="{% url 'app:sort' %}">
                 <button type="button" class="btn btn-outline-success">Sort: Progress</button>
             </a>
             
-            <a href="{% url 'logout' %}">
+            <a href="{% url 'app:logout' %}">
                 <button type="button" class="btn btn-outline-success">Đăng xuất</button>
               </a>
-            <a href="{% url 'logout' %}">
+            <a href="{% url 'app:logout' %}">
                 
                 <button type="button" class="btn btn-outline-success">  Hello:   {{user.username}}   <div class="spinner-grow text-success" style='max-height: 15px;max-width: 15px'></div></button>
               </a>
               Chat with friend: 
             {% for i in users %}
             {% if i.id != user.id %}
-            <a href="{% url 'chat_view' receiver_id=i.id %}">
+            <a href="{% url 'app:chat_view' receiver_id=i.id %}">
                 <button type="button" class="btn btn-outline-success">    {{i.username}}   <div class="spinner-grow text-success" style='max-height: 15px;max-width: 15px'></div></button>
               </a>
               {% endif %}
             {% endfor %}
-            <a href="{% url 'statistics' %}">
+            <a href="{% url 'app:statistics' %}">
                 <button type="button" class="btn btn-outline-success">Statistics</button>
             </a>
               

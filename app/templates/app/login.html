@@ -9,23 +9,6 @@
     <title>Login</title>
 </head>
 <body>
- {% comment %} <form method="POST" >
-        {% csrf_token %}
-        {% if errors %}
-        <div class="container mt-3">
-            <div class="alert alert-danger">
-                {% for error in errors %}
-                    <strong>ERROR:</strong> {{ error }}
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    
-         <p><label>Tài khoản:</label>{{form.username}}</p>
-        <p><label>Mật khẩu:</label>{{form.password}}</p>
-        <input type="hidden" name="next" value="/"/>
-        <input type="submit" value="Đăng nhập"/> 
-    </form>  {% endcomment %}
         <!-- Section: Design Block -->
 <section class="background-radial-gradient overflow-hidden">
     <style>

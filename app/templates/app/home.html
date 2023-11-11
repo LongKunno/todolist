@@ -12,8 +12,8 @@
 <div class="col-md-12 col-12 col-sm-12">
     <div class="card">
       <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-striped">
+        <div class="table-responsive" id="update_todolist">
+          <table class='table table-striped' >
             <tbody><tr>
               <th><center><div class='task-name' >Task Name</div></center></th>
               <th><center><div class='task-name' >Progress</div></center></th>
@@ -22,24 +22,25 @@
               <th><center><div class='action' >Delete</div></center></th>
             </tr>
             {% for task in tasks %}
-            {% comment %} <h4>{{task.date|date:"d-m-Y"}}<a href=" {% url 'post' post.id %} "> {{post.title}}/<a> </h4> {% endcomment %}
-              <tr>
-                <td><center>{{task.taskName}}</center></td>
-                <td class="align-middle">
-                  <div>{{task.phantram}}%</div>
-                  <div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;">
-                    <div class="progress-bar {{task.mau}}" data-width="100" style="width: {{task.progress}}px; height:8px;"></div>
-                  </div>
-                
-                </td>
-                <td>{{task.dueDate}}</td>
-                <td>
-                  <a href='/formEdit/{{task.id}}' class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-original-title="Edit"><i class="fas fa-pencil-alt"></i></a>
-                </td>
-                <td>
-                  <a href='/delete/{{task.id}}' class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-confirm="Are You Sure?|This action can not be undone. Do you want to continue?" data-confirm-yes="alert('Deleted')" data-original-title="Delete"><i class="fas fa-trash"></i></a>
-                </td>
-              </tr>
+                <tr>
+                  <td><center>{{task.taskName}}</center></td>
+                  <td class='align-middle'>
+                    <div>{{task.phantram}}%</div>
+                    <div class='progress' data-height='4'   data-original-title='100%' style='height: 4px;width: 500px;'>
+                      <div class='progress-bar {{task.mau}}' data-width='100' style='width: {{task.progress}}px; height:8px;'></div>
+                    </div>
+                  
+                  </td>
+                  <td>{{task.dueDate}}</td>
+                  <td>
+                    <a data-task-id='{{ task.id }}'  data-taskname='{{task.taskName}}' data-task-progress='{{ task.phantram }}' href='#' class='btn btn-primary btn-edit mr-1'  data-coreui-toggle='modal' data-coreui-target='#EditModal' id='BtnEditModal' ><i class='fas fa-pencil-alt'></i></a>
+                  </td>
+                  <td>
+                    <a data-task-id='{{ task.id }}' href='#' class='btn btn-danger btn-delete'  data-coreui-toggle='modal' data-coreui-target='#DeleteModal' ><i class='fas fa-trash'></i></a>
+                  </td> 
+
+                  
+                </tr>
             {% endfor %}
           </tbody></table>
           <ul class="pagination" style="justify-content: center;">
@@ -48,20 +49,12 @@
             {% else %}
                 <li class="page-item" ><a class="page-link" href="#">Previous</a></li>
             {% endif %}
-            
-            {% for index in page_range %}
-            <li class="page-item"><a class="page-link" href="?page={{ tasks.next_page_number }}">{{index}}</a></li>
-            {% endfor %}
-
-
-
+    
             {% if tasks.has_next %}
                 <li class="page-item"><a class="page-link" href="?page={{ tasks.next_page_number }}">Next</a></li>
             {% else %}
                 <li class="page-item" ><a class="page-link" href="#">Next</a></li>
             {% endif %}
-
-
           </ul>
         </div>
       </div>
@@ -69,10 +62,95 @@
   </div>
 </div>
 
+
+
+
+
+<table class="table table-striped" >
+  <!-- Modal Delete -->
+  <div class="modal fade" id="DeleteModal" >
+   <div class="modal-dialog">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h5 class="modal-title" >Thông báo:</h5>
+         <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+       </div>
+       <div class="modal-body">
+         Xác nhận xoá !!!
+       </div>
+       <div class="modal-footer">
+         <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Close</button>
+         <a class="btn btn-primary btn-delete-task" >Delete</a>
+       </div>
+     </div>
+   </div>
+ </div>
+
+ <!-- Modal Edit -->
+ <div class="modal fade" id="EditModal"  >
+   <div class="modal-dialog">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h5 class="modal-title" >Form Update</h5>
+         <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+       </div>
+       <div class="modal-body">
+         <div class='header'>
+         </div>
+         <form method="POST" action="{% url "app:edit" %}" class='form' style="background-color:#fff5ff;">
+           {% csrf_token %}
+
+           <div class="form-group" >
+             <label class="label" ><b>Id:</b></label>
+             <input type="text" name='id' id="taskId" class="form-control" id="formGroupExampleInput"  placeholder="Task name"  readonly style="background-color:#dddddd;">
+           </div>
+         
+             <div class="form-group" >
+               <label class="label" ><b>Task Name:</b></label>
+               <input type="text" name='taskName' id="taskName"  class="form-control" id="formGroupExampleInput"  placeholder="Task name">
+               <div id ="taskname-error">
+
+               </div>
+               
+             </div>
+         
+             <div class="form-group">
+               <label for="formGroupExampleInput"><b>Progress:</b></label>
+               <input type="range" name='progress' id="progress" class="form-range" min="1" max="100" id="rangeSlider" > 
+               {% comment %} <span id="rangeValue"></span>% {% endcomment %}
+             </div>
+         
+             <div class="mb-3">
+               <label for="datetime" class="form-label"><b>Ngày giờ</b></label>
+               <input type="datetime-local" name='dueDate' id='dueDate' class="form-control" value="2023-10-18T13:30" >
+               <div id ="edit-duedate-error">
+
+               </div>
+             </div>
+             
+             
+         
+             <div class = 'button' id="btn-save">
+              <button id="save" type="submit" onclick="checkEdit()" class="btn btn-success">Save</button>
+             </div>
+
+           </form>
+       </div>
+     </div>
+   </div>
+ </div>
+</table>
+
+
+
+
+
+
+
 {% endblock  %}
 
 {% block timkiem %}
-<form method="POST" action="{% url 'search' %}" >
+<form method="POST" action="{% url 'app:search' %}" >
   {% csrf_token %}
 <div class="container justify-content-center">
   <div class="row justify-content-center">
@@ -91,58 +169,231 @@
 {% endblock  %} 
 
 
-
-
-
 {% block form %}
 <div class='header'>
   <h2>Form </h2>
 </div>
-<form method="POST" action="{% url 'add' %}" class='form' style="background-color:#fff5ff;">
-
-
+<form id="formAdd"  class='form' style="background-color:#fff5ff;">
   {% csrf_token %}
     <div class="form-group" >
-      <input type="text" name='userId' class="form-control" id="formGroupExampleInput" value={{user.id}} readonly style="display:none;">
+      <input type="text" name='userId' class="form-control" id="userId" value={{user.id}} readonly style="display:none; background-color:#ababab;">
     </div>
     <div class="form-group" >
       <label class="label" ><b>Task Name:</b></label>
-      <input type="text" name='taskName' class="form-control" id="formGroupExampleInput" placeholder="Task name">
+      <input type="text" name='taskName' class="form-control" id="add-taskName" placeholder="Task name">
+    </div>
+    <div id ="add-taskname-error">
+
     </div>
 
     <div class="form-group">
       <label for="formGroupExampleInput"><b>Progress:</b></label>
-      <input type="range" name='progress' class="form-range" value="0" min="1" max="100" id="rangeSlider"> 
-      <span id="rangeValue"></span>%
+      <input type="range" name='progress' class="form-range" value="0" min="1" max="100" id="add-progress"> 
+      {% comment %} <span id="rangeValue"></span>% {% endcomment %}
     </div>
-
-    <script>
-      const rangeSlider = document.getElementById('rangeSlider');
-      const rangeValue = document.getElementById('rangeValue');
-
-      rangeSlider.addEventListener('input', function() {
-        rangeValue.textContent = rangeSlider.value;
-      });
-      function clearFields() {
-        document.getElementById("name").value = "";
-        document.getElementById("email").value = "";
-        document.getElementById("phone").value = "";
-      }
-      
-    </script>
 
     <div class="mb-3">
       <label for="datetime" class="form-label"><b>Ngày giờ</b></label>
-      <input type="datetime-local" name='dueDate' class="form-control" id="datetime" name="datetime">
+      <input type="datetime-local" class="form-control" id="add-dueDate" name="dueDate" value="2023-10-18T13:30">
+    </div>
+    <div id ="add-duedate-error">
+
     </div>
 
     <div class = 'button'>
       <button type="button" class="btn btn-danger" onclick="reset()" >Reset</button>
-      <button type="submit" class="btn btn-success">Save</button>
+      <button type="submit" class="btn btn-success" onclick="checkAdd()">Save</button>
     </div>
 
   </form>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+      var now = '{{nows}}';
+      function checkEdit() {
+        var taskName = document.getElementById("taskName").value; 
+        var dueDate = document.getElementById("dueDate").value; 
+        if (taskName == ""|dueDate == "") {
+          event.preventDefault(); 
+          alert("All must be filled out");
 
-{% endblock  %}
+        }else if(dueDate < now){
+          event.preventDefault(); 
+          console.log(dueDate);
+          console.log(now);
+          alert("Only choose a time in the future");
+        }
+       }
+
+        function checkAdd() {
+          var addTaskName = document.getElementById("add-taskName").value; 
+          var addDueDate = document.getElementById("add-dueDate").value; 
+          if (addTaskName == ""|addDueDate == "") {
+            event.preventDefault(); 
+            alert("All must be filled out");
+          }
+          else if(addDueDate < now){
+            event.preventDefault(); 
+            
+            alert("Only choose a time in the future");
+          }
+        }
+
+      $(document).ready(function() {
+
+
+        var addtaskNameInput = document.getElementById("add-taskName");
+        addtaskNameInput.addEventListener("blur", function() {
+          if (addtaskNameInput.value.trim() === "") {
+            $('#add-taskname-error').html("<div class='alert alert-danger' >Vui lòng nhập Task Name</div>");
+          }
+          else
+          $('#add-taskname-error').html("");
+        });
+
+
+        var taskNameInput = document.getElementById("taskName");
+        taskNameInput.addEventListener("blur", function() {
+          if (taskNameInput.value.trim() === "") {
+            $('#taskname-error').html("<div class='alert alert-danger' >Vui lòng nhập Task Name</div>");
+          }
+          else
+          $('#taskname-error').html("");
+        });
+
+        var adddueDate = document.getElementById("add-dueDate");
+        adddueDate.addEventListener("blur", function() {
+          if (adddueDate.value.trim() === "") {
+            $('#add-duedate-error').html("<div class='alert alert-danger' >Vui lòng nhập thời gian</div>");
+          }
+          else if(adddueDate.value < now){
+            $('#add-duedate-error').html("<div class='alert alert-danger' >Vui lòng nhập thời gian trong tương lai</div>");
+          }
+          else
+          $('#add-duedate-error').html("");
+        });
+
+        var editDuedateInput = document.getElementById("dueDate");
+        editDuedateInput.addEventListener("blur", function() {
+          if (editDuedateInput.value.trim() === "") {
+            $('#edit-duedate-error').html("<div class='alert alert-danger' >Vui lòng nhập thời gian</div>");
+            console.log(editDuedateInput.value);
+            console.log(now);
+          }
+          else if(editDuedateInput.value < now){
+            $('#edit-duedate-error').html("<div class='alert alert-danger' >Vui lòng nhập thời gian trong tương lai</div>");
+          }
+          else
+          $('#edit-duedate-error').html("");
+        });
+        
+
+        $('#formAdd').on('submit', function(e) {
+          e.preventDefault();
+          var data = {'userId':$('#userId').val(),'taskName':$('#add-taskName').val(),'progress':$('#add-progress').val(),'dueDate':$('#add-dueDate').val()};
+          console.log(data);
+          postAdd(data);
+        
+          
+      });
+
+        function postAdd(datasend) {
+          $.ajax({
+              url: "{% url 'app:add'  %}",
+              method: 'POST',
+              data: datasend,
+              success: function(response) {
+                  $('#taskName').val('');
+                  $('#progress').val('');
+                  $('#dueDate').val('');
+                  location.reload();
+                  {% comment %} update_todolist(); {% endcomment %}
+              },
+              error: function() {
+                  alert('Failed to add.');
+              }
+          });
+        }
+
+
+        function update_todolist() {
+          $.ajax({
+            url: "{% url 'app:get_todolistview' %}",
+            method: 'GET',
+            success: function(response) {
+                var update_todolist = "<table class='table table-striped' ><tbody><tr>";
+                  update_todolist += "<th><center><div class='task-name' >Task Name</div></center></th>";
+                  update_todolist += " <th><center><div class='task-name' >Progress</div></center></th>";
+                  update_todolist += " <th><center><div class='due-date' >Due Date</div></center></th>";
+                  update_todolist += "  <th><center><div class='action' >Edit</div></center></th>";
+                  update_todolist += " <th><center><div class='action' >Delete</div></center></th>";
+                  update_todolist += "</tr>";
+                for (var i = 0; i < response.length; i++) {
+                    var task = response[i];
+                    update_todolist+="<tr><td><center>"+task.taskName+"</center></td>";
+                    update_todolist+="<td class='align-middle'><div>"+task.phantram+"%</div><div class='progress' data-height='4'   data-original-title='100%' style='height: 4px;width: 500px;'><div class='progress-bar "+task.mau+"' data-width='100' style='width: "+task.progress+"px; height:8px;'></div></div></td>";
+                    update_todolist+="<td>"+task.dueDate+"</td>";
+                    update_todolist+="<td> <a data-task-id='"+ task.id +"'  data-taskname='"+task.taskName+"' data-task-progress='"+ task.phantram +"' href='#' class='btn btn-primary btn-edit mr-1'   data-coreui-toggle='modal' data-coreui-target='#EditModal' id='BtnEditModal' ><i class='fas fa-pencil-alt'></i></a> </td>";
+                    update_todolist+="<td> <a data-task-id='"+ task.id +"' href='#' class='btn btn-danger btn-delete'   data-coreui-toggle='modal' data-coreui-target='#DeleteModal' ><i class='fas fa-trash'></i></a> </td></tr> "; 
+                }
+                update_todolist+="</tbody></table>";
+
+                $('#update_todolist').html(update_todolist);
+            },
+            error: function() {
+                $('#update_todolist').html('<p>Failed to load todolist.</p>');
+            }
+        });
+          
+        };
+
+        
+        $('.btn-delete').click(function() {
+          var taskID = $(this).data('task-id');
+          var deleteURL = '/delete/' + taskID;
+          $('.btn-delete-task').attr('href', deleteURL);
+        });
+
+
+
+        $('.btn-edit').click(function() {
+          console.log("123");
+          var taskId = $(this).data('task-id');
+          console.log(taskId);
+          $('#taskId').val(taskId);
+          var taskName = $(this).data('taskname');
+          console.log("taskName");
+          $('#taskName').val(taskName);
+          var progress = $(this).data('task-progress');
+          $('#progress').val(progress);
+        });
+
+        $('#save').on('submit',function(e){
+          e.preventDefault();
+          var data = {'userId':$('#userId').val(),'taskName':$('#taskName').val(),'progress':$('#progress').val(),'dueDate':$('#dueDate').val()};
+          postUpdate(data);
+          
+      });
+
+        function postUpdate(datasend) {
+          $.ajax({
+              url: "{% url 'app:edit'  %}",
+              method: 'POST',
+              data: datasend,
+              success: function(response) {
+                console.log("success");
+            },
+              error: function() {
+                  alert('Failed to Update.');
+              }
+          });
+        }
+        
+      });
+      
+      
+    </script>
+
+
+    {% endblock  %}
 
 

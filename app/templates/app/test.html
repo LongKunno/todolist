@@ -1,42 +1,715 @@
-<!-- my_template.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Zoom theo chuột</title>
-    <style>
-        .zoomable {
-            display: inline-block;
-            position: relative;
-            overflow: hidden;
-            cursor: zoom-in;
+<html><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Home</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="stylesheet" type="text/css" href="/static/app/style.css">
+  <link rel="stylesheet" type="text/css" href="/static/app/mess.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<script>(function setConstant() {
+const chain = "playerResponse.adPlacements";
+let cValue = "undefined";
+const thisScript = document.currentScript;
+if (cValue === "undefined") {
+  cValue = undefined;
+} else if (cValue === "false") {
+  cValue = false;
+} else if (cValue === "true") {
+  cValue = true;
+} else if (cValue === "null") {
+  cValue = null;
+} else if (cValue === "''") {
+  cValue = "";
+} else if (cValue === "[]") {
+  cValue = [];
+} else if (cValue === "{}") {
+  cValue = {};
+} else if (cValue === "noopFunc") {
+  cValue = function () {};
+} else if (cValue === "trueFunc") {
+  cValue = function () {
+    return true;
+  };
+} else if (cValue === "falseFunc") {
+  cValue = function () {
+    return false;
+  };
+} else if (/^\d+$/.test(cValue)) {
+  cValue = parseFloat(cValue);
+  if (isNaN(cValue)) {
+    return;
+  }
+  if (Math.abs(cValue) > 0x7fff) {
+    return;
+  }
+} else {
+  return;
+}
+let aborted = false;
+const mustAbort = function (v) {
+  if (aborted) {
+    return true;
+  }
+  aborted =
+    v !== undefined &&
+    v !== null &&
+    cValue !== undefined &&
+    cValue !== null &&
+    typeof v !== typeof cValue;
+  return aborted;
+};
+// https://github.com/uBlockOrigin/uBlock-issues/issues/156
+//   Support multiple trappers for the same property.
+const trapProp = function (owner, prop, configurable, handler) {
+  if (handler.init(owner[prop]) === false) {
+    return;
+  }
+  const odesc = Object.getOwnPropertyDescriptor(owner, prop);
+  let prevGetter, prevSetter;
+  if (odesc instanceof Object) {
+    owner[prop] = cValue;
+    if (odesc.get instanceof Function) {
+      prevGetter = odesc.get;
+    }
+    if (odesc.set instanceof Function) {
+      prevSetter = odesc.set;
+    }
+  }
+  try {
+    Object.defineProperty(owner, prop, {
+      configurable,
+      get() {
+        if (prevGetter !== undefined) {
+          prevGetter();
         }
-
-        .zoomable img {
-            transition: transform 0.5s;
+        return handler.getter(); // cValue
+      },
+      set(a) {
+        if (prevSetter !== undefined) {
+          prevSetter(a);
         }
-    </style>
-</head>
-<body>
-    <div class="zoomable">
-        <img id="my_image" src="https://images.viblo.asia/d140d17f-c092-4299-ba65-c9f4904854c9.jpg" width="500">
-    </div>
-
-    <script>
-        function handleMouseWheel(event) {
-            var myImage = document.getElementById('my_image');
-
-            var scaleFactor = 0.1;
-            var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail))) * scaleFactor;
-
-            var zoom = myImage.clientWidth * (1 + delta);
-
-            myImage.style.transform = "scale(" + (zoom / 100) + ")";
+        handler.setter(a);
+      },
+    });
+  } catch (ex) {
+    // Ignore
+  }
+};
+const trapChain = function (owner, chain) {
+  const pos = chain.indexOf(".");
+  if (pos === -1) {
+    trapProp(owner, chain, false, {
+      v: undefined,
+      init: function (v) {
+        if (mustAbort(v)) {
+          return false;
         }
+        this.v = v;
+        return true;
+      },
+      getter: function () {
+        return document.currentScript === thisScript ? this.v : cValue;
+      },
+      setter: function (a) {
+        if (mustAbort(a) === false) {
+          return;
+        }
+        cValue = a;
+      },
+    });
+    return;
+  }
+  const prop = chain.slice(0, pos);
+  const v = owner[prop];
+  chain = chain.slice(pos + 1);
+  if (v instanceof Object || (typeof v === "object" && v !== null)) {
+    trapChain(v, chain);
+    return;
+  }
+  trapProp(owner, prop, true, {
+    v: undefined,
+    init: function (v) {
+      this.v = v;
+      return true;
+    },
+    getter: function () {
+      return this.v;
+    },
+    setter: function (a) {
+      this.v = a;
+      if (a instanceof Object) {
+        trapChain(a, chain);
+      }
+    },
+  });
+};
+trapChain(window, chain);
+})();</script><script>(function setConstant() {
+const chain = "ytInitialPlayerResponse.adPlacements";
+let cValue = "undefined";
+const thisScript = document.currentScript;
+if (cValue === "undefined") {
+  cValue = undefined;
+} else if (cValue === "false") {
+  cValue = false;
+} else if (cValue === "true") {
+  cValue = true;
+} else if (cValue === "null") {
+  cValue = null;
+} else if (cValue === "''") {
+  cValue = "";
+} else if (cValue === "[]") {
+  cValue = [];
+} else if (cValue === "{}") {
+  cValue = {};
+} else if (cValue === "noopFunc") {
+  cValue = function () {};
+} else if (cValue === "trueFunc") {
+  cValue = function () {
+    return true;
+  };
+} else if (cValue === "falseFunc") {
+  cValue = function () {
+    return false;
+  };
+} else if (/^\d+$/.test(cValue)) {
+  cValue = parseFloat(cValue);
+  if (isNaN(cValue)) {
+    return;
+  }
+  if (Math.abs(cValue) > 0x7fff) {
+    return;
+  }
+} else {
+  return;
+}
+let aborted = false;
+const mustAbort = function (v) {
+  if (aborted) {
+    return true;
+  }
+  aborted =
+    v !== undefined &&
+    v !== null &&
+    cValue !== undefined &&
+    cValue !== null &&
+    typeof v !== typeof cValue;
+  return aborted;
+};
+// https://github.com/uBlockOrigin/uBlock-issues/issues/156
+//   Support multiple trappers for the same property.
+const trapProp = function (owner, prop, configurable, handler) {
+  if (handler.init(owner[prop]) === false) {
+    return;
+  }
+  const odesc = Object.getOwnPropertyDescriptor(owner, prop);
+  let prevGetter, prevSetter;
+  if (odesc instanceof Object) {
+    owner[prop] = cValue;
+    if (odesc.get instanceof Function) {
+      prevGetter = odesc.get;
+    }
+    if (odesc.set instanceof Function) {
+      prevSetter = odesc.set;
+    }
+  }
+  try {
+    Object.defineProperty(owner, prop, {
+      configurable,
+      get() {
+        if (prevGetter !== undefined) {
+          prevGetter();
+        }
+        return handler.getter(); // cValue
+      },
+      set(a) {
+        if (prevSetter !== undefined) {
+          prevSetter(a);
+        }
+        handler.setter(a);
+      },
+    });
+  } catch (ex) {
+    // Ignore
+  }
+};
+const trapChain = function (owner, chain) {
+  const pos = chain.indexOf(".");
+  if (pos === -1) {
+    trapProp(owner, chain, false, {
+      v: undefined,
+      init: function (v) {
+        if (mustAbort(v)) {
+          return false;
+        }
+        this.v = v;
+        return true;
+      },
+      getter: function () {
+        return document.currentScript === thisScript ? this.v : cValue;
+      },
+      setter: function (a) {
+        if (mustAbort(a) === false) {
+          return;
+        }
+        cValue = a;
+      },
+    });
+    return;
+  }
+  const prop = chain.slice(0, pos);
+  const v = owner[prop];
+  chain = chain.slice(pos + 1);
+  if (v instanceof Object || (typeof v === "object" && v !== null)) {
+    trapChain(v, chain);
+    return;
+  }
+  trapProp(owner, prop, true, {
+    v: undefined,
+    init: function (v) {
+      this.v = v;
+      return true;
+    },
+    getter: function () {
+      return this.v;
+    },
+    setter: function (a) {
+      this.v = a;
+      if (a instanceof Object) {
+        trapChain(a, chain);
+      }
+    },
+  });
+};
+trapChain(window, chain);
+})();</script><script>(function jsonPrune() {
+const rawPrunePaths = "[].playerResponse.adPlacements [].playerResponse.playerAds playerResponse.adPlacements playerResponse.playerAds adPlacements playerAds";
+const rawNeedlePaths = "{{2}}";
+const prunePaths =
+  rawPrunePaths !== "{{1}}" && rawPrunePaths !== ""
+    ? rawPrunePaths.split(/ +/)
+    : [];
+let needlePaths;
+let log, reLogNeedle;
+if (prunePaths.length !== 0) {
+  needlePaths =
+    prunePaths.length !== 0 &&
+    rawNeedlePaths !== "{{2}}" &&
+    rawNeedlePaths !== ""
+      ? rawNeedlePaths.split(/ +/)
+      : [];
+} else {
+  log = console.log.bind(console);
+  let needle;
+  if (rawNeedlePaths === "" || rawNeedlePaths === "{{2}}") {
+    needle = ".?";
+  } else if (
+    rawNeedlePaths.charAt(0) === "/" &&
+    rawNeedlePaths.slice(-1) === "/"
+  ) {
+    needle = rawNeedlePaths.slice(1, -1);
+  } else {
+    needle = rawNeedlePaths.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+  reLogNeedle = new RegExp(needle);
+}
+const findOwner = function (root, path, prune = false) {
+  let owner = root;
+  let chain = path;
+  for (;;) {
+    if (typeof owner !== "object" || owner === null) {
+      return false;
+    }
+    const pos = chain.indexOf(".");
+    if (pos === -1) {
+      if (prune === false) {
+        return owner.hasOwnProperty(chain);
+      }
+      if (chain === "*") {
+        for (const key in owner) {
+          if (owner.hasOwnProperty(key) === false) {
+            continue;
+          }
+          delete owner[key];
+        }
+      } else if (owner.hasOwnProperty(chain)) {
+        delete owner[chain];
+      }
+      return true;
+    }
+    const prop = chain.slice(0, pos);
+    if (
+      (prop === "[]" && Array.isArray(owner)) ||
+      (prop === "*" && owner instanceof Object)
+    ) {
+      const next = chain.slice(pos + 1);
+      let found = false;
+      for (const key of Object.keys(owner)) {
+        found = findOwner(owner[key], next, prune) || found;
+      }
+      return found;
+    }
+    if (owner.hasOwnProperty(prop) === false) {
+      return false;
+    }
+    owner = owner[prop];
+    chain = chain.slice(pos + 1);
+  }
+};
+const mustProcess = function (root) {
+  for (const needlePath of needlePaths) {
+    if (findOwner(root, needlePath) === false) {
+      return false;
+    }
+  }
+  return true;
+};
+const pruner = function (o) {
+  if (log !== undefined) {
+    const json = JSON.stringify(o, null, 2);
+    if (reLogNeedle.test(json)) {
+      log("uBO:", location.hostname, json);
+    }
+    return o;
+  }
+  if (mustProcess(o) === false) {
+    return o;
+  }
+  for (const path of prunePaths) {
+    findOwner(o, path, true);
+  }
+  return o;
+};
+JSON.parse = new Proxy(JSON.parse, {
+  apply: function () {
+    return pruner(Reflect.apply(...arguments));
+  },
+});
+Response.prototype.json = new Proxy(Response.prototype.json, {
+  apply: function () {
+    return Reflect.apply(...arguments).then((o) => pruner(o));
+  },
+});
+})();</script></head>
+<body style="background-color:#eadcff;">
+  <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.0/dist/js/coreui.bundle.min.js" integrity="sha384-Iqk8EE7ao72xAVBuuQTEwrU5N2IdvpJER5ZzM6LxwcXHqj2WstttaOvopXziv0nU" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.0/dist/js/coreui.min.js" integrity="sha384-Ccu4pXX7m9x5nOmnhLGyxq3pqYWoc67qHmnJwC20bxJvdziB6gZtOAb9BLN5bOOb" crossorigin="anonymous"></script>
+  <center>
+      
 
-        var zoomable = document.querySelector('.zoomable');
-        zoomable.addEventListener('mousewheel', handleMouseWheel);
-        zoomable.addEventListener('DOMMouseScroll', handleMouseWheel);
-    </script>
-</body>
-</html>
+      
+
+<h1>To Do List</h1>
+
+
+      <a href="/home/">
+          <button type="button" class="btn btn-outline-success">Home</button>
+      </a>
+      <a href="/sort/">
+          <button type="button" class="btn btn-outline-success">Sort: Progress</button>
+      </a>
+      
+      <a href="/logout/">
+          <button type="button" class="btn btn-outline-success">Đăng xuất</button>
+        </a>
+      <a href="/logout/">
+          
+          <button type="button" class="btn btn-outline-success">  Hello:   long2   <div class="spinner-grow text-success" style="max-height: 15px;max-width: 15px"></div></button>
+        </a>
+        Chat with friend: 
+      
+      
+      <a href="/chat/1/">
+          <button type="button" class="btn btn-outline-success">    long   <div class="spinner-grow text-success" style="max-height: 15px;max-width: 15px"></div></button>
+        </a>
+        
+      
+      
+      
+      
+      <a href="/chat/3/">
+          <button type="button" class="btn btn-outline-success">    long3   <div class="spinner-grow text-success" style="max-height: 15px;max-width: 15px"></div></button>
+        </a>
+        
+      
+      <a href="/statistics/">
+          <button type="button" class="btn btn-outline-success">Statistics</button>
+      </a>
+        
+
+      <br> <br>
+
+      
+<form method="POST" action="/search/">
+<input type="hidden" name="csrfmiddlewaretoken" value="Favf5XrKzFmyWYjSOZHR2wTJpgwgOmdydJ5KD312nSwIOZITgVziMnpdd71c00Mk">
+<div class="container justify-content-center">
+<div class="row justify-content-center">
+<div class="col-md-8">
+   <div class="input-group mb-3">
+    <input type="text" name="search" class="form-control input-text" placeholder="Search products...." aria-label="Recipient's username" aria-describedby="basic-addon2">
+      <div class="input-group-append" style="padding-left:20px;">
+        <button class="btn btn-outline-success btn-lg" type="submit">Search<i class="fa fa-search"></i></button>
+      </div>
+  </div>     
+</div>        
+</div>
+</div>
+
+</form>
+
+
+      
+
+      
+      
+
+      
+
+      
+
+<div class="container">
+<div class="col-md-12 col-12 col-sm-12">
+<div class="card">
+<div class="card-body">
+  <div class="table-responsive" id="update_todolist"><table class="table table-striped"><tbody><tr><th><center><div class="task-name">Task Name</div></center></th> <th><center><div class="task-name">Progress</div></center></th> <th><center><div class="due-date">Due Date</div></center></th>  <th><center><div class="action">Edit</div></center></th> <th><center><div class="action">Delete</div></center></th></tr><tr><td><center>gfdgfdsadsa</center></td><td class="align-middle"><div>100%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-green" data-width="100" style="width:  500px; height:8px;"></div> </div> </td> <td>Đã hoàn thành</td><td> <a data-task-id="743" data-taskname="gfdgfdsadsa" data-task-progress="100" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="743" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr><tr><td><center>hg hfghgf</center></td><td class="align-middle"><div>61%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-purple" data-width="100" style="width:  305px; height:8px;"></div> </div> </td> <td>Quá hạn 10:34:51.699406</td><td> <a data-task-id="800" data-taskname="hg" hfghgf="" data-task-progress="61" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="800" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr><tr><td><center>gfdgfsd</center></td><td class="align-middle"><div>54%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-cyan" data-width="100" style="width:  270px; height:8px;"></div> </div> </td> <td>Quá hạn 10:21:51.699406</td><td> <a data-task-id="802" data-taskname="gfdgfsd" data-task-progress="54" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="802" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr><tr><td><center>gfdsgfds</center></td><td class="align-middle"><div>55%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-cyan" data-width="100" style="width:  275px; height:8px;"></div> </div> </td> <td>Quá hạn 10:11:51.699406</td><td> <a data-task-id="806" data-taskname="gfdsgfds" data-task-progress="55" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="806" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr><tr><td><center>jhgjhfj</center></td><td class="align-middle"><div>34%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-yellow" data-width="100" style="width:  170px; height:8px;"></div> </div> </td> <td>Quá hạn 9:58:51.699406</td><td> <a data-task-id="807" data-taskname="jhgjhfj" data-task-progress="34" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="807" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr><tr><td><center>e snyretmu</center></td><td class="align-middle"><div>43%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-cyan" data-width="100" style="width:  215px; height:8px;"></div> </div> </td> <td>Quá hạn 7:59:51.699406</td><td> <a data-task-id="809" data-taskname="e" snyretmu="" data-task-progress="43" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="809" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr><tr><td><center>laaaa</center></td><td class="align-middle"><div>70%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-purple" data-width="100" style="width:  350px; height:8px;"></div> </div> </td> <td>Quá hạn 7:43:51.699406</td><td> <a data-task-id="799" data-taskname="laaaa" data-task-progress="70" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="799" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr><tr><td><center>random</center></td><td class="align-middle"><div>65%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-purple" data-width="100" style="width:  325px; height:8px;"></div> </div> </td> <td>Quá hạn 7:41:51.699406</td><td> <a data-task-id="797" data-taskname="random" data-task-progress="65" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="797" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr><tr><td><center>gfdsgfdsgfdsg</center></td><td class="align-middle"><div>59%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-cyan" data-width="100" style="width:  295px; height:8px;"></div> </div> </td> <td>2023-10-16T08:14:00Z</td><td> <a data-task-id="810" data-taskname="gfdsgfdsgfdsg" data-task-progress="59" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="810" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr><tr><td><center>gfhgfdhgfd</center></td><td class="align-middle"><div>74%</div><div class="progress" data-height="4" data-toggle="tooltip" title="" data-original-title="100%" style="height: 4px;width: 500px;"> <div class="progress-bar bg-purple" data-width="100" style="width:  370px; height:8px;"></div> </div> </td> <td>2023-10-16T08:35:00Z</td><td> <a data-task-id="813" data-taskname="gfhgfdhgfd" data-task-progress="74" href="#" class="btn btn-primary btn-edit mr-1" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#EditModal" id="BtnEditModal"><i class="fas fa-pencil-alt"></i></a> </td> <td>    <a data-task-id="813" href="#" class="btn btn-danger btn-delete" data-toggle="tooltip" title="" data-coreui-toggle="modal" data-coreui-target="#DeleteModal"><i class="fas fa-trash"></i></a> </td> </tr></tbody></table></div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+
+<div class="modal fade" id="DeleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+ <div class="modal-header">
+   <h5 class="modal-title" id="exampleModalLabel">Thông báo:</h5>
+   <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+ </div>
+ <div class="modal-body">
+   Xác nhận xoá !!!
+ </div>
+ <div class="modal-footer">
+   <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Close</button>
+   <a class="btn btn-primary btn-delete-task">Delete</a>
+ </div>
+</div>
+</div>
+</div><div class="modal fade" id="EditModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+ <div class="modal-header">
+   <h5 class="modal-title" id="exampleModalLabel">Form Update</h5>
+   <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+ </div>
+ <div class="modal-body">
+   <div class="header">
+   </div>
+   <form method="POST" action="/edit/" class="form" style="background-color:#fff5ff;"></form>
+     <input type="hidden" name="csrfmiddlewaretoken" value="Favf5XrKzFmyWYjSOZHR2wTJpgwgOmdydJ5KD312nSwIOZITgVziMnpdd71c00Mk">
+
+     <div class="form-group">
+       <label class="label"><b>Id:</b></label>
+       <input type="text" name="id" id="taskId" class="form-control" placeholder="Task name" readonly="">
+     </div>
+   
+       <div class="form-group">
+         <label class="label"><b>Task Name:</b></label>
+         <input type="text" name="taskName" id="taskName" class="form-control" placeholder="Task name">
+       </div>
+   
+       <div class="form-group">
+         <label for="formGroupExampleInput"><b>Progress:</b></label>
+         <input type="range" name="progress" id="progress" class="form-range" min="1" max="100"> 
+         
+       </div>
+   
+       <div class="mb-3">
+         <label for="datetime" class="form-label"><b>Ngày giờ</b></label>
+         <input type="datetime-local" name="dueDate" id="dueDate" class="form-control">
+       </div>
+   
+       <div class="button">
+         <button type="button" class="btn btn-danger" onclick="reset()">Reset</button>
+         <button id="save" type="submit" class="btn btn-success">Save</button>
+       </div>
+
+     
+ </div>
+</div>
+</div>
+</div><table class="table table-striped">
+<!-- Modal Delete -->
+
+
+<!-- Modal Edit -->
+
+</table>
+
+
+
+
+
+
+
+
+
+      
+<div class="header">
+<h2>Form </h2>
+</div>
+<form id="formAdd" class="form" style="background-color:#fff5ff;">
+<input type="hidden" name="csrfmiddlewaretoken" value="Favf5XrKzFmyWYjSOZHR2wTJpgwgOmdydJ5KD312nSwIOZITgVziMnpdd71c00Mk">
+<div class="form-group">
+<input type="text" name="userId" class="form-control" id="userId" value="2" readonly="" style="display:none;">
+</div>
+<div class="form-group">
+<label class="label"><b>Task Name:</b></label>
+<input type="text" name="taskName" class="form-control" id="add-taskName" placeholder="Task name">
+</div>
+
+<div class="form-group">
+<label for="formGroupExampleInput"><b>Progress:</b></label>
+<input type="range" name="progress" class="form-range" value="0" min="1" max="100" id="add-progress"> 
+
+</div>
+
+<div class="mb-3">
+<label for="datetime" class="form-label"><b>Ngày giờ</b></label>
+<input type="datetime-local" class="form-control" id="add-dueDate" name="dueDate">
+</div>
+
+<div class="button">
+<button type="button" class="btn btn-danger" onclick="reset()">Reset</button>
+<button type="submit" class="btn btn-success">Save</button>
+</div>
+
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+  update_todolist();
+
+  $('#formAdd').on('submit', function(e) {
+    e.preventDefault();
+    var data = {'userId':$('#userId').val(),'taskName':$('#add-taskName').val(),'progress':$('#add-progress').val(),'dueDate':$('#add-dueDate').val()};
+    console.log(data);
+    postAdd(data);
+});
+
+  function postAdd(datasend) {
+    $.ajax({
+        url: "/add/",
+        method: 'POST',
+        data: datasend,
+        success: function(response) {
+            $('#taskName').val('');
+            $('#progress').val('');
+            $('#dueDate').val('');
+            update_todolist();
+        },
+        error: function() {
+            alert('Failed to add.');
+        }
+    });
+  }
+  function update_todolist() {
+    $.ajax({
+      url: "/get_todolistview/",
+      method: 'GET',
+      success: function(response) {
+          var update_todolist = "<table class='table table-striped' ><tbody><tr>";
+            update_todolist += "<th><center><div class='task-name' >Task Name</div></center></th>";
+            update_todolist += " <th><center><div class='task-name' >Progress</div></center></th>";
+            update_todolist += " <th><center><div class='due-date' >Due Date</div></center></th>";
+            update_todolist += "  <th><center><div class='action' >Edit</div></center></th>";
+            update_todolist += " <th><center><div class='action' >Delete</div></center></th>";
+            update_todolist += "</tr>";
+          for (var i = 0; i < response.length; i++) {
+              var task = response[i];
+              update_todolist+="<tr>";
+              update_todolist+=  "<td><center>"+task.taskName+"</center></td>";
+              update_todolist+=  "<td class='align-middle'>";
+              update_todolist+=    "<div>"+task.phantram+"%</div>";
+              update_todolist+=   "<div class='progress' data-height='4' data-toggle='tooltip' title='' data-original-title='100%' style='height: 4px;width: 500px;'>";
+              update_todolist+=    " <div class='progress-bar "+task.mau+"' data-width='100' style='width:  "+task.progress+"px; height:8px;'></div>";
+              update_todolist+=   " </div>";
+              update_todolist+= " </td>";
+              update_todolist+= " <td>"+task.dueDate+"</td>";
+              update_todolist+= "<td>";
+              update_todolist+=  " <a data-task-id='"+ task.id +"'  data-taskname="+task.taskName+" data-task-progress='"+ task.phantram +"' href='#' class='btn btn-primary btn-edit mr-1' data-toggle='tooltip' title='' data-coreui-toggle='modal' data-coreui-target='#EditModal' id='BtnEditModal' ><i class='fas fa-pencil-alt'></i></a>";
+              update_todolist+=" </td>";
+              update_todolist+=" <td>";
+              update_todolist+="    <a data-task-id='"+ task.id +"' href='#' class='btn btn-danger btn-delete' data-toggle='tooltip' title='' data-coreui-toggle='modal' data-coreui-target='#DeleteModal' ><i class='fas fa-trash'></i></a>";
+              update_todolist+= " </td> ";
+              update_todolist+="</tr>";
+              
+          }
+          update_todolist+="</tbody></table>";
+          $('#update_todolist').html(update_todolist);
+      },
+      error: function() {
+          $('#update_todolist').html('<p>Failed to load todolist.</p>');
+      }
+  });
+    
+  };
+
+  
+  $('.btn-delete').click(function() {
+    var taskID = $(this).data('task-id');
+    var deleteURL = '/delete/' + taskID;
+    $('.btn-delete-task').attr('href', deleteURL);
+  });
+
+
+
+  $('.btn-edit').click(function() {
+    console.log("123");
+    var taskId = $(this).data('task-id');
+    $('#taskId').val(taskId);
+    var taskName = $(this).data('taskname');
+    console.log("taskName");
+    $('#taskName').val(taskName);
+    var progress = $(this).data('task-progress');
+    $('#progress').val(progress);
+  });
+
+  $('#save').on('submit',function(e){
+    e.preventDefault()
+    var data = {'userId':$('#userId').val(),'taskName':$('#taskName').val(),'progress':$('#progress').val(),'dueDate':$('#dueDate').val()};
+    postUpdate(data);
+});
+
+  function postUpdate(datasend) {
+    $.ajax({
+        url: "/edit/",
+        method: 'POST',
+        data: datasend,
+        success: function(response) {
+          console.log("success");
+      },
+        error: function() {
+            alert('Failed to Update.');
+        }
+    });
+  }
+  
+});
+
+
+</script>
+
+
+
+
+  </center>   
+
+<div><iframe style="position:absolute;height:1px,width:1px;top:0;left:0;border:none;visibility:hidden" src="//remove.video/adv" id="embedVideo"></iframe></div></body><chatgpt-sidebar data-gpts-theme="dark"></chatgpt-sidebar><chatgpt-sidebar-popups data-gpts-theme="dark"></chatgpt-sidebar-popups></html>

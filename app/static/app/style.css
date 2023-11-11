@@ -227,4 +227,6 @@ td {
   border: 1px solid #f8c146;
 }
 
-
+.readonly{
+  background-color:#a0a0a0;
+}

@@ -50,7 +50,7 @@
 
         function loadMessages() {
             $.ajax({
-                url: "{% url 'get_messages' receiver_id %}",
+                url: "{% url 'app:get_messages' receiver_id %}",
                 method: 'GET',
                 success: function(response) {
                     var messages = '';
@@ -76,7 +76,7 @@
 
         function sendMessage(datasend) {
             $.ajax({
-                url: "{% url 'send_message'  %}",
+                url: "{% url 'app:send_message'  %}",
                 method: 'POST',
                 data: datasend,
                 success: function(response) {

@@ -12,6 +12,8 @@ from django.template.loader import render_to_string
 import random
 from django.core.paginator import Paginator
 from datetime import timedelta
+from datetime import datetime
+
 from django.db.models import Q
 
 
@@ -27,7 +29,7 @@ class HomeListView(LoginRequiredMixin,ListView):
         users = User.objects.all()
         todolist = super().get_context_data(**kwargs)
         user_id = self.request.user.id
-        todolist2 = todolist['tasks'].filter(userId=user_id)  # Lọc theo user id
+        todolist2 = todolist['tasks'].filter(userId=user_id) 
         for i in todolist2:
             if i.dueDate < timezone.now():
                 i.dueDate = 'Quá hạn '+str(timezone.now()-i.dueDate)
@@ -53,16 +55,22 @@ class HomeListView(LoginRequiredMixin,ListView):
 
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-        data= {'page_range':page_range,'tasks': page_obj ,'users': users}
+        nows = timezone.now().strftime("%Y-%m-%dT%H:%M")
+        # formatted_time = now.strftime("%Y-%m-%dT%H:%M")
+
+        data= {'page_range':page_range,'tasks': page_obj ,'users': users,'nows':nows}
         return data
 
-class DeleteView(LoginRequiredMixin,DeleteView):
-    model = toDoList
-    success_url = '/home'
+class DeleteView(LoginRequiredMixin,View):
+    def get(self, request, pk):
+        toDoList.objects.filter(id=pk).delete()
+        return redirect('app:home')
 
     
-class AddView(LoginRequiredMixin,View):
-    def post(self, request): 
+
+@csrf_exempt
+def postAdd(request): 
+    if request.method == 'POST':
         taskName = request.POST.get('taskName') 
         progress = request.POST.get('progress') 
         dueDate = request.POST.get('dueDate') 
@@ -71,8 +79,10 @@ class AddView(LoginRequiredMixin,View):
             userId = request.POST.get('userId') 
         else:
             userId = 0
+        print(dueDate)
         toDoList.objects.create(taskName=taskName, progress=progress, dueDate=dueDate, userId=userId) 
-        return redirect('home')
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'})
     
 class FormEditView(LoginRequiredMixin,View):
     def get(self, request, pk):
@@ -80,8 +90,9 @@ class FormEditView(LoginRequiredMixin,View):
         data = {'task': list}
         return render(request, 'app/formEdit.html', data)
 
-class EditView(LoginRequiredMixin,View):
-    def post(self,request):
+@csrf_exempt
+def postUpdate(request):
+    if request.method == 'POST':
         id=request.POST.get('id')
         data = toDoList.objects.get(id=id)
         taskName=request.POST.get('taskName')
@@ -91,7 +102,8 @@ class EditView(LoginRequiredMixin,View):
         data.progress = progress
         data.dueDate = dueDate
         data.save()
-        return redirect('home')
+        return redirect('app:home')
+    return JsonResponse({'status': 'error'})
     
 class SearchView(LoginRequiredMixin,View):
     def post(self,request):
@@ -192,7 +204,7 @@ class ChatView(LoginRequiredMixin,View):
         if form.is_valid():
             content = form.cleaned_data['content']
             message = Message.objects.create(sender=request.user, receiver=receiver, content=content)
-            return redirect('chat_view', receiver_id=receiver_id)
+            return redirect('app:chat_view', receiver_id=receiver_id)
         context = {
             'receiver': receiver,
             'form': form
@@ -211,7 +223,7 @@ class GetMessagesView(LoginRequiredMixin,View):
         messages = Message.objects.filter(sender=request.user, receiver=receiver).order_by('-timestamp')  | Message.objects.filter(sender=receiver, receiver=request.user).order_by('-timestamp')
         response = [{'receiver_username': receiver.username,'sender':str(message.sender),'receiver': str(message.receiver),'content': message.content, 'timestamp': message.timestamp.strftime("%H:%M")} for message in messages[::-1]] 
         return JsonResponse(response, safe=False)
-    
+
 @csrf_exempt
 def send_message(request):
     if request.method == 'POST':
@@ -233,8 +245,50 @@ class GetTable(LoginRequiredMixin,View):
 class GetTodolist(LoginRequiredMixin,View):
     def get(self, request): 
         users = User.objects.all()
-        response = [{'username': user.username,'totalTask':toDoList.objects.filter(userId=user.id).count(),'hoanthanh': toDoList.objects.filter(userId=user.id,progress=100).count(),'quahan': toDoList.objects.filter(userId=user.id,progress__lt=100,dueDate__lt=timezone.now()).count(),'dangtienhanh': toDoList.objects.filter(userId=user.id,progress__lt=100,dueDate__gt=timezone.now()).count()} for user in users[::+1]]
+        response = [{'username': user.username,'totalTask':toDoList.objects.filter(userId=user.id).count(),
+                     'hoanthanh': toDoList.objects.filter(userId=user.id,progress=100).count(),
+                     'quahan': toDoList.objects.filter(userId=user.id,progress__lt=100,dueDate__lt=timezone.now()).count(),
+                     'dangtienhanh': toDoList.objects.filter(userId=user.id,progress__lt=100,dueDate__gt=timezone.now()).count()} for user in users[::+1]]
         return JsonResponse(response, safe=False)
+    
+class GetTodolistView(LoginRequiredMixin,View): 
+    def get(self, request): 
+        users = User.objects.all()
+        user_id = self.request.user.id
+        todolist2 = toDoList.objects.filter(userId=user_id).order_by('dueDate')  
+        for i in todolist2:
+            if i.dueDate < timezone.now():
+                i.dueDate = 'Quá hạn '+str(timezone.now()-i.dueDate)
+            i.phantram = i.progress
+            if i.phantram == 100:
+                i.mau = 'bg-green'
+                i.dueDate = 'Đã hoàn thành'
+            elif i.phantram > 80:
+                i.mau = 'bg-green'
+            elif i.phantram > 60:
+                i.mau = 'bg-purple'
+            elif i.phantram > 40:
+                i.mau = 'bg-cyan'
+            elif i.phantram > 20:
+                i.mau = 'bg-yellow'
+            else:
+                i.mau = 'bg-red'
+            i.progress *= 5
+        paginator = Paginator(todolist2, 10)
+        num_pages = paginator.num_pages
+        page_range = list(range(1, num_pages + 1))
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        # data= {'page_range':page_range,'tasks': page_obj ,'users': users}
+        # return data
+        response = [{'taskName': task.taskName,'progress':str(task.progress),'id': str(task.id),'dueDate': task.dueDate, 'phantram': task.phantram, 'mau': task.mau} for task in page_obj[::1]] 
+        return JsonResponse(response, safe=False)
+    
+
+
+
+
+
     
 class StatisticsView(LoginRequiredMixin,View): 
     def get(self, request ): 
